@@ -1,0 +1,85 @@
+public virtual class EinsteinAI_BodyLanguage extends EinsteinAI_HttpBodyBuilder {
+    
+    public Blob buildCreateDatasetIntent(String url,String name) {
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('path', url);
+        body += WriteBoundary();
+        body += WriteBodyParameter('name', name);
+        body += WriteBoundary();
+        body += WriteBodyParameter('type', 'text-intent');
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    }
+    public Blob buildCreateDatasetSentiment(String url,String name) {
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('path', url);
+        body += WriteBoundary();
+        body += WriteBodyParameter('name', name);
+        body += WriteBoundary();
+        body += WriteBodyParameter('type', 'text-sentiment');
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    }
+    public Blob buildCreateExamples(String url){
+     	String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('path', url);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    }
+    public Blob buildFeedbackExample(String modelId,String text,String expectedLabel){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('modelId', modelId);
+        body += WriteBoundary();
+        body += WriteBodyParameter('document', text);
+        body += WriteBoundary();
+        body += WriteBodyParameter('expectedLabel', expectedLabel);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    }
+    public Blob buildTrainDataset(String name,String datasetId){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('name', name);
+        body += WriteBoundary();
+        body += WriteBodyParameter('datasetId', datasetId);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    }
+    public Blob buildreTrainDataset(String modelid){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('modelId', modelid);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    }
+    public Blob buildIntentPrediction(String modelId,String text){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('modelId', modelId);
+        body += WriteBoundary();
+        body += WriteBodyParameter('document', text);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    } 
+    public Blob buildSentimentPrediction(String modelId,String text){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('modelId', modelId);
+        body += WriteBoundary();
+        body += WriteBodyParameter('document', text);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    } 
+}

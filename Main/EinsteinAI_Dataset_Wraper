@@ -1,0 +1,20 @@
+public class EinsteinAI_Dataset_Wraper {
+    public Integer id{set;get;}
+    public String name{set;get;}
+    public labelSummar labelSummary{set;get;}
+    public Integer totalExamples{set;get;}
+    public Integer totalLabels{set;get;}
+    public Boolean available{set;get;}
+    public String statusMsg{set;get;}
+    public String type{set;get;}
+    public class labelSummar{
+        public List<labels> labels{set;get;}
+    }
+    public class labels{
+         public Integer id{set;get;}
+         public Integer datasetId{set;get;}
+         public String name{set;get;}
+         public String numExamples{set;get;}
+    }
+    
+}

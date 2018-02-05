@@ -1,0 +1,64 @@
+public virtual class EinsteinAI_BodyVision extends EinsteinAI_HttpBodyBuilder{
+     public Blob buildCreateDataset(String url,String name,String classificationType) {
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('path', url);
+        body += WriteBoundary();
+        body += WriteBodyParameter('name', name);
+        body += WriteBoundary();
+        if(classificationType.equals('image'))
+        	body += WriteBodyParameter('type', 'image');
+        else if(classificationType.equals('object'))
+            body += WriteBodyParameter('type', 'image-detection');
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    }
+     public Blob buildCreateExamples(String url){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('path', url);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+     }
+     public Blob buildTrainDataset(String name,String datasetId){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('name', name);
+        body += WriteBoundary();
+        body += WriteBodyParameter('datasetId', datasetId);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+     }
+     public Blob buildRetrainModel(String modelId){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('modelId', modelId);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+     }
+     public Blob buildPredictionBase64(String base64,String modelId){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('sampleBase64Content', base64);
+        body += WriteBoundary();
+        body += WriteBodyParameter('modelId', modelId);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    } 
+     public Blob buildPredictionURL(String url,String modelId){
+        String body = '';
+        body += WriteBoundary();
+        body += WriteBodyParameter('sampleLocation', url);
+        body += WriteBoundary();
+        body += WriteBodyParameter('modelId', modelId);
+        body += WriteBoundary(EndingType.CrLf);
+        Blob bodyBlob = EncodingUtil.base64Decode(body);
+        return bodyBlob;
+    } 
+    
+}

@@ -1,0 +1,121 @@
+public class EinsteinAI_JWT {
+    
+    public String alg {get;set;}
+    public String iss {get;set;}
+    public String sub {get;set;}
+    public String aud {get;set;}
+    public String exp {get;set;}
+    public String iat {get;set;}
+    public Map<String,String> claims {get;set;}
+    public Integer validFor {get;set;}
+    public String cert {get;set;}
+    public String pkcs8 {get;set;}
+    public String privateKey {get;set;}
+    
+    
+    public static final String HS256 = 'HS256';
+    public static final String RS256 = 'RS256';
+    public static final String NONE = 'none';
+
+    
+    public EinsteinAI_JWT(String alg) {
+        this.alg = alg;
+        this.validFor = 300;
+    }
+    
+    
+    public String issue() {
+            String jwt = '';
+        JSONGenerator header = JSON.createGenerator(false); 
+        header.writeStartObject();
+        header.writeStringField('alg', this.alg);        
+        header.writeEndObject();       
+        String encodedHeader = base64URLencode(Blob.valueOf(header.getAsString()));    
+        JSONGenerator body = JSON.createGenerator(false);        
+        body.writeStartObject();      
+        body.writeStringField('iss', this.iss);      
+        body.writeStringField('sub', this.sub);    
+        body.writeStringField('aud', this.aud);       
+        Long rightNow = (dateTime.now().getTime()/1000)+1;      
+        body.writeNumberField('iat', rightNow);      
+        body.writeNumberField('exp', (rightNow + validFor));    
+        if (claims != null) {          
+            for (String claim : claims.keySet()) {   
+                body.writeStringField(claim, claims.get(claim));     
+            }        }        
+        body.writeEndObject();jwt = encodedHeader + '.' + base64URLencode(Blob.valueOf(body.getAsString()));
+        if ( this.alg == HS256 ) {            
+            Blob key = EncodingUtil.base64Decode(privateKey);       
+            Blob signature = Crypto.generateMac('hmacSHA256',Blob.valueof(jwt),key);    
+            jwt += '.' + base64URLencode(signature);       
+        } else if ( this.alg == RS256 ) {          
+            Blob signature = null;                     
+            if (cert != null ) {        
+                signature = Crypto.signWithCertificate('rsa-sha256', Blob.valueOf(jwt), cert); 
+            } else {              
+                Blob privateKey = EncodingUtil.base64Decode(pkcs8);       
+                signature = Crypto.sign('rsa-sha256', Blob.valueOf(jwt), privateKey);     
+            }            jwt += '.' + base64URLencode(signature);    
+        } else if ( this.alg == NONE ) {          
+            jwt += '.';        
+        }          
+        
+        return jwt;        
+    }
+
+    public String base64URLencode(Blob input){ 
+        String output = encodingUtil.base64Encode(input);   
+        output = output.replace('+', '-');      
+        output = output.replace('/', '_');      
+        while ( output.endsWith('=')){       
+            output = output.subString(0,output.length()-1);     
+        }
+        return output;
+    }
+    
+    public static String getAccessToken(String tokenEndpoint,EinsteinAI_JWT jwt) {
+       String access_token = null;        
+        String body = 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + jwt.issue();
+        HttpRequest req = new HttpRequest();                                   
+        req.setMethod('POST');        
+        req.setEndpoint(tokenEndpoint);        
+        req.setHeader('Content-type', 'application/x-www-form-urlencoded');        
+        req.setBody(body);        
+        Http http = new Http();                      
+        HTTPResponse res = http.send(req);                
+        if ( res.getStatusCode() == 200 ) {            
+            System.JSONParser parser = System.JSON.createParser(res.getBody());            
+            while (parser.nextToken() != null) {                
+                if ((parser.getCurrentToken() == JSONToken.FIELD_NAME) && (parser.getText() == 'access_token')) {   
+                    parser.nextToken();                    
+                    access_token = parser.getText();                    
+                    break;                }            }        }        
+        return access_token;
+        
+    }
+    
+    public static String getAccessToken() {
+        String Email=Label.EinsteinAI_Email;
+        String OAUTH2=Label.EinsteinAI_BaseUrl+'/oauth2/token';
+        ContentVersion base64Content = [SELECT Title, VersionData FROM ContentVersion where Title='einstein_platform' LIMIT 1];
+        String keyContents = base64Content.VersionData.tostring();
+        keyContents = keyContents.replace('-----BEGIN RSA PRIVATE KEY-----', '');
+        keyContents = keyContents.replace('-----END RSA PRIVATE KEY-----', '');
+        keyContents = keyContents.replace('\n', '');
+         
+        // Get a new token
+        EinsteinAI_JWT jwt = new EinsteinAI_JWT('RS256');
+        jwt.pkcs8 = keyContents; // Comment this if you are using jwt.cert
+        jwt.iss = 'developer.force.com';
+        jwt.sub = Email;
+        jwt.aud = OAUTH2;
+        jwt.exp = '3600';
+        String accessToken = '';
+        
+        if (!Test.isRunningTest()) {
+            accessToken = EinsteinAI_JWT.getAccessToken(OAUTH2, jwt);
+        }
+        
+        return accessToken;    
+    }
+}

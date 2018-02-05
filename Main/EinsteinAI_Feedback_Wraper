@@ -1,0 +1,12 @@
+public class EinsteinAI_Feedback_Wraper {
+    public Integer id{set;get;}
+    public String name{set;get;}
+    public String location{set;get;}
+    public label label{set;get;}
+     public class label{
+         public Integer id{set;get;}
+         public Integer datasetId{set;get;}
+         public String name{set;get;}
+         public String numExamples{set;get;}
+    }
+}

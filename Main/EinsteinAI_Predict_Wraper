@@ -1,0 +1,13 @@
+public class EinsteinAI_Predict_Wraper {
+   
+        public String label{set;get;}
+        public Double probability{set;get;}
+    	public boundingBox boundingBox{set;get;}
+  		
+    	public class boundingBox{
+            public String minX{set;get;}
+            public String minY{set;get;}
+            public String maxX{set;get;}
+            public String maxY{set;get;}
+    	}
+}

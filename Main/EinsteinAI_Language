@@ -1,0 +1,207 @@
+public class EinsteinAI_Language extends EinsteinAI_BodyLanguage {
+    String BASEURL=Label.EinsteinAI_BaseUrl;
+    String BearerToken='';
+    String APIUSAGE=BASEURL+'/apiusage';
+    String CREATEDATASET=BASEURL+'/language/datasets/upload';
+    String DATASET=BASEURL+'/language/datasets';
+    String DELETEDATASET=BASEURL+'/language';
+    String FEEDBACK=BASEURL+'/language/feedback';
+    String TRAIN=BASEURL+'/language/train';
+    String RETRAIN=BASEURL+'/language/retrain';
+    String INTENT=BASEURL+'/language/intent';
+    String SENTIMENT=BASEURL+'/language/sentiment';
+    public EinsteinAI_Language(){
+        BearerToken=EinsteinAI_JWT.getAccessToken();
+    }
+    public String getBearerToken(){
+        return BearerToken;
+    }
+    public String deleteDataset(String id){
+        http send=new http();
+        httpRequest request=buildHttpRequest('https://api.einstein.ai/v2/language/datasets/'+id,'DELETE',false);
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+         if(response.getStatusCode()== 204)
+            return 'Dataset Deleted';
+        else
+            return response.getBody();
+    }
+    
+    public HttpRequest buildHttpRequest(String url,String method,boolean Content_Type){
+        HttpRequest request=new HttpRequest();
+        request.setHeader('Authorization','Bearer '+getBearerToken());
+        request.setEndpoint(url);
+        request.setMethod(method);
+        request.setHeader('Cache-Control','no-cache');
+        if(Content_Type)
+            request.setHeader('Content-Type', GetContentType());
+        return request;   
+    }
+    public EinsteinAI_ApiUsage_Wraper getApiUsage(){
+        Http send=new Http();
+        HttpRequest request=buildHttpRequest(APIUSAGE,'GET',false);
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+        Map<String,object> temp=(Map<String,object>) json.deserializeUntyped(response.getBody());
+        List<object> temp2=(List<object>)temp.get('data');
+        String temp3=json.serialize(temp2.get(0));
+        EinsteinAI_ApiUsage_Wraper ret=(EinsteinAI_ApiUsage_Wraper) json.deserialize(temp3, EinsteinAI_ApiUsage_Wraper.class);
+        System.debug(ret);
+        return ret;
+    }
+    
+    public EinsteinAI_Dataset_Wraper createDataset(String url,String name){
+        Http send=new Http();
+     	HttpRequest request=buildHttpRequest(CREATEDATASET,'POST',true);
+        request.setBodyAsBlob(buildCreateDatasetIntent(url,name));
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+        EinsteinAI_Dataset_Wraper ret=(EinsteinAI_Dataset_Wraper) json.deserialize(response.getBody(), EinsteinAI_Dataset_Wraper.class);
+        System.debug(ret);
+        return ret;
+    }
+    public List<EinsteinAI_Dataset_Wraper> getAllDatasets(){
+        Http send=new Http();
+        HttpRequest request=buildHttpRequest(DATASET,'GET',false);
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+         List<EinsteinAI_Dataset_Wraper> ret=new List<EinsteinAI_Dataset_Wraper>();
+        Map<String,object> temp=(Map<String,object>) json.deserializeUntyped(response.getBody());
+        List<object> temp2=(List<object>) temp.get('data');
+        for(object o:temp2){
+        String jsonText=json.serialize(o);
+        EinsteinAI_Dataset_Wraper val=(EinsteinAI_Dataset_Wraper) json.deserialize(jsonText, EinsteinAI_Dataset_Wraper.class);
+            ret.add(val);
+        }
+        return ret;
+    }
+    public EinsteinAI_Dataset_Wraper getDataset(String id){
+        Http send=new Http();
+        HttpRequest request=buildHttpRequest(DATASET+'/'+id,'GET',false);
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+        EinsteinAI_Dataset_Wraper ret=(EinsteinAI_Dataset_Wraper) json.deserialize(response.getBody(), EinsteinAI_Dataset_Wraper.class);
+        return ret;
+    }
+    
+    public EinsteinAI_Traning_Wraper trainDataset(String name,String datasetid){
+        http send=new http();
+        httpRequest request=buildHttpRequest(TRAIN,'POST',true);
+        request.setBodyAsBlob(buildTrainDataset(name,datasetid));
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+          EinsteinAI_Traning_Wraper ret=(EinsteinAI_Traning_Wraper) json.deserialize(response.getBody(),EinsteinAI_Traning_Wraper.class);
+        return ret;
+    }
+    public EinsteinAI_Traning_Wraper retrainDataset(String modelid){
+        http send=new http();
+        httpRequest request=buildHttpRequest(RETRAIN,'POST',true);
+        request.setBodyAsBlob(buildreTrainDataset(modelid));
+        HttpResponse response=send.send(request);
+        System.debug(response.getStatusCode());
+         EinsteinAI_Traning_Wraper ret=(EinsteinAI_Traning_Wraper) json.deserialize(response.getBody(),EinsteinAI_Traning_Wraper.class);
+        System.debug(ret);
+        return ret;
+    }
+    public EinsteinAI_Traning_Wraper getTrainingStatus(String modelId){
+        http send=new http();
+        httpRequest request=buildHttpRequest(TRAIN+'/'+modelId,'GET',false);
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+        EinsteinAI_Traning_Wraper ret=(EinsteinAI_Traning_Wraper) json.deserialize(response.getBody(),EinsteinAI_Traning_Wraper.class);
+        return ret;
+        
+    }
+    public List<EinsteinAI_Traning_Wraper> getDatasetModel(String Datasetid){
+        http send=new http();
+        httpRequest request=buildHttpRequest(DATASET+'/'+Datasetid+'/models','GET',false);
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+        
+        List<EinsteinAI_Traning_Wraper> ret=new List<EinsteinAI_Traning_Wraper>();
+        map<String,object> temp=(map<String,object>) json.deserializeUntyped(response.getBody());
+        List<object> temp2=(List<object>)temp.get('data');
+        for(object o:temp2){
+            String jsonText=json.serialize(o);
+            EinsteinAI_Traning_Wraper val=(EinsteinAI_Traning_Wraper) json.deserialize(jsonText,EinsteinAI_Traning_Wraper.class);
+            ret.add(val);
+        }
+        return ret;
+    }
+    
+    public EinsteinAI_Dataset_Wraper createExample(String url,String datasetID){
+        http send=new http();
+        httpRequest request=buildHttpRequest(DELETEDATASET+'/'+datasetID+'/upload','PUT',true);
+        request.setBodyAsBlob(buildCreateExamples(url));
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+        EinsteinAI_Dataset_Wraper ret=(EinsteinAI_Dataset_Wraper) json.deserialize(response.getBody(), EinsteinAI_Dataset_Wraper.class);
+        System.debug(ret);
+        return ret;
+        
+    }
+    public EinsteinAI_Feedback_Wraper createFeedback(String modelid,String text,String expectedlabel){
+        http send=new http();
+        httpRequest request=buildHttpRequest(FEEDBACK,'POST',true);
+        request.setBodyAsBlob(buildFeedbackExample(modelid,text,expectedlabel));
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+        EinsteinAI_Feedback_Wraper ret=(EinsteinAI_Feedback_Wraper) json.deserialize(response.getBody(), EinsteinAI_Feedback_Wraper.class);
+        return ret;
+    }
+    public List<EinsteinAI_Feedback_Wraper>  getExample(String datasetid){
+         http send=new http();
+        httpRequest request=buildHttpRequest(DATASET+'/'+datasetid+'/examples','GET',false);
+        HttpResponse response=send.send(request);
+        System.debug(response.getbody());
+        Map<String,object> temp=(Map<String,object>) json.deserializeUntyped(response.getBody());
+        List<EinsteinAI_Feedback_Wraper> ret=new List<EinsteinAI_Feedback_Wraper>();
+        List<object> temp2=(List<object>) temp.get('data');
+        for(object o:temp2){
+            String jsonText=json.serialize(o);
+            EinsteinAI_Feedback_Wraper val=(EinsteinAI_Feedback_Wraper) json.deserialize(jsonText, EinsteinAI_Feedback_Wraper.class);
+            ret.add(val);
+        }
+        return ret;
+    }
+    
+    public List<EinsteinAI_Predict_Wraper> predictionIntent(String modelId,String text){
+        http send=new http();
+        httpRequest request=buildHttpRequest(INTENT,'POST',true);
+        request.setBodyAsBlob(buildIntentPrediction(modelId,text));
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+        Map<String,object> temp=(Map<String,object>) json.deserializeUntyped(response.getBody());
+        
+        List<EinsteinAI_Predict_Wraper> ret=new List<EinsteinAI_Predict_Wraper>();
+        List<object> temp2=(List<object>) temp.get('probabilities');
+        if(temp2!=null){
+        System.debug('list '+temp2);
+        
+        for(object o:temp2){
+            String jsonText=json.serialize(o);
+            EinsteinAI_Predict_Wraper val=(EinsteinAI_Predict_Wraper) JSON.deserialize(jsonText, EinsteinAI_Predict_Wraper.class);
+            ret.add(val);
+        }
+        }
+        return ret;
+    }
+    public List<EinsteinAI_Predict_Wraper> predictionSentiment(String modelId,String text){
+        http send=new http();
+        httpRequest request=buildHttpRequest(SENTIMENT,'POST',true);
+        request.setBodyAsBlob(buildSentimentPrediction(modelId,text));
+        HttpResponse response=send.send(request);
+        System.debug(response.getBody());
+         Map<String,object> temp=(Map<String,object>) json.deserializeUntyped(response.getBody());
+        List<EinsteinAI_Predict_Wraper> ret=new List<EinsteinAI_Predict_Wraper>();
+        List<object> temp2=(List<object>) temp.get('probabilities');
+        
+        for(object o:temp2){
+            String jsonText=json.serialize(o);
+            EinsteinAI_Predict_Wraper val=(EinsteinAI_Predict_Wraper) JSON.deserialize(jsonText, EinsteinAI_Predict_Wraper.class);
+            ret.add(val);
+        }
+        return ret;
+        
+    }
+}

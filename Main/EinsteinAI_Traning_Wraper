@@ -1,0 +1,9 @@
+public class EinsteinAI_Traning_Wraper {
+ public Integer datasetId{set;get;}
+     public Integer datasetVersionId{set;get;}
+     public Double progress{set;get;}
+    public String name{set;get;}
+    public String status{set;get;}
+    public String modelId{set;get;}	
+    public String failureMsg{set;get;}	
+}

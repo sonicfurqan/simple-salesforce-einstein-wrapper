@@ -1,0 +1,8 @@
+public class EinsteinAI_ApiUsage_Wraper {
+    public Integer id{set;get;}
+    public Integer organizationId{set;get;}
+    public Integer predictionsRemaining{set;get;}	
+    public Integer predictionsUsed{set;get;}
+    public Integer predictionsMax{set;get;}
+    public String licenseId{set;get;}
+}
